@@ -1,0 +1,25 @@
+replicaCount: 2
+
+image:
+  repository: defdevopsacr.azurecr.io/devops-app
+  tag: v2
+
+service:
+  port: 80
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  className: nginx
+  # Ensure your template uses .Values.ingress.host
+  host: devops-app-defrik.swedencentral.cloudapp.azure.com
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+tls:
+  enabled: true
+  secretName: devops-tls
+  hosts:
+    - devops-app-defrik.swedencentral.cloudapp.azure.com
+
+namespace: production

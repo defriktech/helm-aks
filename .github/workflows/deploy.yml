@@ -1,0 +1,50 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Azure Login
+      uses: azure/login@v2
+
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to ACR
+      run: az acr login --name defdevopsacr
+
+    - name: Build Docker Image
+      run: |
+        docker build \
+        -t defdevopsacr.azurecr.io/devops-app:${{ github.sha }} \
+        ./application
+
+    - name: Push Docker Image
+      run: |
+        docker push \
+        defdevopsacr.azurecr.io/devops-app:${{ github.sha }}
+
+    - name: Get AKS Credentials
+      run: |
+        az aks get-credentials \
+          --resource-group aks-rg \
+          --name devops-aks \
+          --overwrite-existing
+
+    - name: Helm Upgrade
+      run: |
+        helm upgrade --install devops-release \
+        ./infrastructure/helm/devops-app \
+        --namespace production \
+        --set image.tag=${{ github.sha }}
