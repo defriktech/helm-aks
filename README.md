@@ -66,7 +66,7 @@ Helm Upgrade on AKS
 # Project Structure
 
 ```text
-project16-helm-aks/
+helm-aks/
 │
 ├── app/
 │   ├── app.py
